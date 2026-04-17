@@ -14,8 +14,8 @@ jobs:
     name: Python lint + unit tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -32,7 +32,7 @@ jobs:
     name: Go provider
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Detect provider module
         id: detect
         run: |
@@ -41,7 +41,7 @@ jobs:
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         if: steps.detect.outputs.exists == 'true'
         with:
           go-version: "1.22"
@@ -59,7 +59,7 @@ jobs:
     name: Docker compose validate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Validate compose files
         run: |
           docker compose -f dev/docker-compose.yml config >/dev/null
@@ -69,7 +69,7 @@ jobs:
     name: Shell lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: shellcheck
         run: |
           sudo apt-get update -qq
