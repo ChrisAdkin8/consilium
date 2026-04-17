@@ -1,6 +1,6 @@
 [project]
 name = "consilium"
-version = "0.1.0-mvp-pre"
+version = "0.1.0.dev0"
 description = "A parliament of AI agents that deliberates over Terraform changes."
 requires-python = ">=3.12"
 dependencies = [
