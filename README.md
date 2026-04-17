@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/consilium_emblem.svg" alt="Consilium emblem" width="240">
+</p>
+
 # Consilium
 
 **A parliament of AI agents that deliberates over proposed Terraform changes.**
