@@ -55,7 +55,7 @@ class KBMcpClient:
     # ------------------------------------------------------------------
     # Context-manager protocol
     # ------------------------------------------------------------------
-    async def __aenter__(self) -> "KBMcpClient":
+    async def __aenter__(self) -> KBMcpClient:
         self._cm = streamablehttp_client(self._url)
         read, write, _ = await self._cm.__aenter__()
         self._session = ClientSession(read, write)

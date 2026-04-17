@@ -64,8 +64,8 @@ def normalize_opinion(opinion: Any) -> Any:
     only if the input shape is unrecognisable.
     """
     try:
-        verdict = getattr(opinion, "verdict")
-        concerns = getattr(opinion, "concerns")
+        verdict = opinion.verdict
+        concerns = opinion.concerns
         tool_outputs = getattr(opinion, "tool_outputs", {}) or {}
     except AttributeError as exc:
         raise ProtocolViolation(f"opinion object missing required fields: {exc}") from exc

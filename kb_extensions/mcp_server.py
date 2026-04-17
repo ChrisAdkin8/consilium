@@ -35,13 +35,13 @@ import logging
 import math
 import os
 import re
-import time
 from pathlib import Path
 from typing import Any
 
 import httpx
 from mcp.server.fastmcp import FastMCP
-from neo4j import GraphDatabase, exceptions as neo4j_exc
+from neo4j import GraphDatabase
+from neo4j import exceptions as neo4j_exc
 
 # ---------------------------------------------------------------------------
 # Configuration
