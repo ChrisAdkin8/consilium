@@ -1,0 +1,10 @@
+name: tagging_missing_owner
+expected_verdict: concern
+expected_tools_triggered:
+  - policy_check
+expected_rule_ids:
+  - require-owner
+expected_min_severity: MEDIUM
+resource_ids: []
+notes: >
+  Bucket with no `tags { owner = ... }` block. policy_check must flag require-owner.

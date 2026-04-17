@@ -1,0 +1,35 @@
+[project]
+name = "consilium"
+version = "0.1.0-mvp-pre"
+description = "A parliament of AI agents that deliberates over Terraform changes."
+requires-python = ">=3.12"
+dependencies = [
+    "mcp>=1.3.0",
+    "neo4j>=5.20",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+agents = [
+    "anthropic>=0.28",
+    "langgraph>=0.1",
+]
+dev = [
+    "ruff",
+    "pytest",
+    "pytest-asyncio>=0.23",
+    "pyyaml>=6.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["kb_extensions/base"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra"

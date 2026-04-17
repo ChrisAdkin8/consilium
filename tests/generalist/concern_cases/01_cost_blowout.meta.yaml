@@ -1,0 +1,8 @@
+name: cost_blowout
+expected_verdict: concern
+expected_tools_triggered:
+  - cost_estimate
+expected_min_severity: MEDIUM
+resource_ids: []
+notes: >
+  3× m5.24xlarge is ~$14k/month delta. Must trigger cost_estimate concern.

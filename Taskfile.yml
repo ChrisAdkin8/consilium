@@ -1,0 +1,306 @@
+version: '3'
+
+# Consilium task runner.
+#
+# Prerequisites: https://taskfile.dev/installation/
+#   brew install go-task        # macOS
+#   sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin   # Linux
+#
+# Usage:
+#   task            # lists all tasks
+#   task up         # start the full local stack
+#   task dev        # up + bootstrap + seed in one shot
+
+# ── Environment defaults ──────────────────────────────────────────────────────
+env:
+  VAULT_ADDR:        "http://127.0.0.1:8200"
+  VAULT_TOKEN:       "consilium-dev-root"
+  CONSUL_HTTP_ADDR:  "http://127.0.0.1:8500"
+  NOMAD_ADDR:        "http://127.0.0.1:4646"
+  NEO4J_URI:         "bolt://127.0.0.1:7687"
+  NEO4J_USER:        "neo4j"
+  NEO4J_PASS:        "consilium-dev"
+  KB_MCP_PORT:       "8000"
+
+tasks:
+
+  # ── Default: show task list ─────────────────────────────────────────────────
+  default:
+    silent: true
+    cmds:
+      - task --list
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Stack lifecycle
+  # ────────────────────────────────────────────────────────────────────────────
+
+  up:
+    desc: "Start the full local stack (Vault, Consul, Nomad, Neo4j)"
+    cmds:
+      - docker compose -f dev/docker-compose.yml up -d
+      - echo "Waiting for all services to be healthy..."
+      - |
+        for svc in consilium-vault consilium-consul consilium-nomad consilium-neo4j; do
+          until [ "$(docker inspect -f '{{.State.Health.Status}}' $svc 2>/dev/null)" = "healthy" ]; do
+            echo "  waiting for $svc..."
+            sleep 3
+          done
+          echo "  $svc healthy ✓"
+        done
+
+  up-slim:
+    desc: "Start the slim stack (Vault, Consul, Nomad — no Neo4j; saves ~1.5 GB RAM)"
+    cmds:
+      - docker compose -f dev/docker-compose.slim.yml up -d
+      - echo "Waiting for slim stack services..."
+      - |
+        for svc in consilium-vault consilium-consul consilium-nomad; do
+          until [ "$(docker inspect -f '{{.State.Health.Status}}' $svc 2>/dev/null)" = "healthy" ]; do
+            echo "  waiting for $svc..."
+            sleep 3
+          done
+          echo "  $svc healthy ✓"
+        done
+
+  down:
+    desc: "Stop and remove the local stack containers"
+    cmds:
+      - docker compose -f dev/docker-compose.yml down
+      - docker compose -f dev/docker-compose.slim.yml down 2>/dev/null || true
+
+  down-volumes:
+    desc: "Stop the stack AND remove all named volumes (destructive — wipes Vault/Neo4j state)"
+    prompt: "This destroys all local Vault keys and Neo4j data. Continue?"
+    cmds:
+      - docker compose -f dev/docker-compose.yml down -v
+      - docker compose -f dev/docker-compose.slim.yml down -v 2>/dev/null || true
+
+  logs:
+    desc: "Tail live logs from all stack containers"
+    cmds:
+      - docker compose -f dev/docker-compose.yml logs -f
+
+  logs-vault:
+    desc: "Tail Vault container logs"
+    cmds:
+      - docker logs -f consilium-vault
+
+  logs-neo4j:
+    desc: "Tail Neo4j container logs"
+    cmds:
+      - docker logs -f consilium-neo4j
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Bootstrap and provisioning
+  # ────────────────────────────────────────────────────────────────────────────
+
+  bootstrap:
+    desc: "Provision Vault transit keys, AppRoles, audit device, and Neo4j schema (idempotent)"
+    cmds:
+      - ./dev/bootstrap.sh
+
+  bootstrap-reset:
+    desc: "Wipe Consilium-scoped Vault state and rebuild from scratch"
+    prompt: "This removes all Vault transit keys and AppRoles for Consilium. Continue?"
+    cmds:
+      - ./dev/bootstrap.sh --reset
+
+  seed:
+    desc: "Seed Neo4j with the sample Terraform resource graph (idempotent)"
+    cmds:
+      - python -m kb_extensions.seed.seed_neo4j
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Services
+  # ────────────────────────────────────────────────────────────────────────────
+
+  mcp:
+    desc: "Start the KB MCP server (blocks; runs on port 8000)"
+    cmds:
+      - python -m kb_extensions.mcp_server
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Composite: full dev setup
+  # ────────────────────────────────────────────────────────────────────────────
+
+  dev:
+    desc: "Full dev setup: start stack, bootstrap Vault, seed Neo4j (MCP server started separately)"
+    cmds:
+      - task: up
+      - task: bootstrap
+      - task: seed
+      - echo ""
+      - echo "Dev stack ready. Start the MCP server in a second terminal:"
+      - echo "  task mcp"
+      - echo ""
+      - echo "Then verify Consul registration:"
+      - echo "  task consul-check"
+
+  dev-reset:
+    desc: "Tear down, wipe volumes, and rebuild the full dev environment from scratch"
+    prompt: "This destroys all local state (Vault keys, Neo4j data). Continue?"
+    cmds:
+      - task: down-volumes
+      - task: up
+      - task: bootstrap
+      - task: seed
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Health and verification
+  # ────────────────────────────────────────────────────────────────────────────
+
+  vault-keys:
+    desc: "List Vault transit keys (expected: architect, blast_radius, generalist, operator, red_team, speaker)"
+    cmds:
+      - vault list consilium/transit/keys
+
+  vault-status:
+    desc: "Show Vault seal and HA status"
+    cmds:
+      - vault status
+
+  consul-check:
+    desc: "Check Consul catalog — list all passing consilium services"
+    cmds:
+      - |
+        echo "=== All registered Consilium services ==="
+        curl -s "${CONSUL_HTTP_ADDR}/v1/catalog/services" | \
+          python3 -c "import json,sys; svcs=json.load(sys.stdin); [print(' •', k) for k in svcs if 'consilium' in k]"
+      - |
+        echo ""
+        echo "=== consilium-kb-mcp health ==="
+        curl -s "${CONSUL_HTTP_ADDR}/v1/health/service/consilium-kb-mcp?passing" | \
+          python3 -c "import json,sys; nodes=json.load(sys.stdin); print(' passing nodes:', len(nodes))"
+
+  nomad-status:
+    desc: "List Nomad job allocations"
+    cmds:
+      - nomad status 2>/dev/null || curl -s "${NOMAD_ADDR}/v1/jobs" | python3 -c "import json,sys; [print(' •', j['ID'], j['Status']) for j in json.load(sys.stdin)]"
+
+  stack-health:
+    desc: "Run all health checks (Vault, Consul, Nomad, Neo4j, KB MCP)"
+    cmds:
+      - |
+        echo "=== Vault ==="
+        vault status 2>&1 | grep -E "Sealed|HA Mode|Version" | sed 's/^/  /'
+      - |
+        echo ""
+        echo "=== Consul leader ==="
+        curl -sf "${CONSUL_HTTP_ADDR}/v1/status/leader" | sed 's/^/  /'
+        echo ""
+      - |
+        echo "=== Nomad leader ==="
+        curl -sf "${NOMAD_ADDR}/v1/status/leader" | sed 's/^/  /'
+        echo ""
+      - |
+        echo "=== Neo4j bolt ==="
+        nc -zv 127.0.0.1 7687 2>&1 | sed 's/^/  /'
+      - |
+        echo ""
+        echo "=== KB MCP server ==="
+        curl -sf "http://127.0.0.1:${KB_MCP_PORT}/health" 2>/dev/null && echo "  healthy" || echo "  NOT REACHABLE (run: task mcp)"
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Install
+  # ────────────────────────────────────────────────────────────────────────────
+
+  install:
+    desc: "Install Python dependencies (core + dev extras)"
+    cmds:
+      - pip install -e ".[dev]"
+
+  install-kb:
+    desc: "Install dependencies needed to run the KB MCP server"
+    cmds:
+      - pip install mcp neo4j httpx
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Tests
+  # ────────────────────────────────────────────────────────────────────────────
+
+  test:
+    desc: "Run unit tests (no stack required)"
+    cmds:
+      - pytest tests/unit -v
+
+  test-integration:
+    desc: "Run integration tests (requires full stack + MCP server running)"
+    cmds:
+      - |
+        echo "Requires: task dev && task mcp (in separate terminal)"
+        pytest tests/integration -v
+
+  test-red-team:
+    desc: "Run Red Team accuracy scoreboard (requires M4 — not yet built)"
+    cmds:
+      - echo "Red Team test harness not yet built (milestone M4)"
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Lint
+  # ────────────────────────────────────────────────────────────────────────────
+
+  lint:
+    desc: "Run ruff linter over all Python source"
+    cmds:
+      - ruff check .
+
+  lint-fix:
+    desc: "Run ruff with --fix (auto-correct safe violations)"
+    cmds:
+      - ruff check --fix .
+
+  check:
+    desc: "Lint + unit tests (CI equivalent)"
+    cmds:
+      - task: lint
+      - task: test
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Demo (scenes from MVP_PLAN §2.3 — available from M5 onwards)
+  # ────────────────────────────────────────────────────────────────────────────
+
+  demo-happy:
+    desc: "Demo scene 1: benign EC2 change flows through all analysts and applies"
+    cmds:
+      - |
+        echo "consilium submit not yet built (milestone M5)"
+        echo "Scene: add a t3.small EC2 instance to the minimal-parliament example"
+        # task stack-health  # uncomment to pre-flight before recording
+        # consilium submit "add a t3.small EC2 instance to the web tier" \
+        #   --plan examples/minimal_parliament/main.tf \
+        #   --watch
+
+  demo-veto:
+    desc: "Demo scene 2: IAM wildcard change is blocked by Red Team with signed findings"
+    cmds:
+      - |
+        echo "consilium submit not yet built (milestone M5)"
+        echo "Scene: attach AdministratorAccess policy to a Lambda role"
+        # consilium submit "attach AdministratorAccess to lambda-exec role" \
+        #   --plan examples/veto_bait/main.tf \
+        #   --watch
+
+  demo-audit:
+    desc: "Demo scene 3: cryptographic audit verification of the vetoed deliberation"
+    cmds:
+      - |
+        echo "consilium audit not yet built (milestone M6)"
+        echo "Scene: replay and verify the deliberation chain for the veto above"
+        # DELIBERATION_ID=$(cat /tmp/last_deliberation_id)
+        # consilium audit verify "$DELIBERATION_ID"
+
+  demo-runbook:
+    desc: "Pre-demo health check runbook (run the night before recording)"
+    cmds:
+      - task: stack-health
+      - task: vault-keys
+      - task: consul-check
+      - task: nomad-status
+      - |
+        echo ""
+        echo "=== Speaker logs (last 20 lines) ==="
+        docker logs consilium-nomad 2>&1 | tail -20 || echo "  no Nomad logs"
+      - |
+        echo ""
+        echo "Runbook complete. If all green, proceed to recording."
+        echo "Smoke test (M5+): consilium submit 'add a t3.small...' — expect deliberation_id in ≤90s"

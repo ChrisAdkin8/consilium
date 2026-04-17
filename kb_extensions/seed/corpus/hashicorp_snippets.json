@@ -1,0 +1,107 @@
+[
+  {
+    "id": "tf-aws-vpc-001",
+    "text": "The aws_vpc resource creates a Virtual Private Cloud in AWS. A VPC is a logically isolated section of the AWS Cloud where you can launch AWS resources in a virtual network that you define. Key attributes: cidr_block (required), enable_dns_support, enable_dns_hostnames, tags. A VPC is the foundation for any AWS network architecture.",
+    "source_uri": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc",
+    "resource_type": "aws_vpc",
+    "provider": "aws"
+  },
+  {
+    "id": "tf-aws-subnet-001",
+    "text": "The aws_subnet resource creates a subnet within an aws_vpc. Subnets are associated with a single Availability Zone. Public subnets have map_public_ip_on_launch=true and route table entries pointing to an Internet Gateway. Private subnets route outbound traffic through a NAT Gateway. Required attributes: vpc_id, cidr_block, availability_zone.",
+    "source_uri": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet",
+    "resource_type": "aws_subnet",
+    "provider": "aws"
+  },
+  {
+    "id": "tf-aws-sg-001",
+    "text": "The aws_security_group resource controls inbound and outbound traffic for EC2 instances, RDS, and other resources. It acts as a virtual firewall. Best practice: use aws_vpc_security_group_ingress_rule and aws_vpc_security_group_egress_rule resources instead of inline rules to avoid conflicts. Avoid 0.0.0.0/0 ingress on port 22 or 3389.",
+    "source_uri": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group",
+    "resource_type": "aws_security_group",
+    "provider": "aws"
+  },
+  {
+    "id": "tf-aws-instance-001",
+    "text": "The aws_instance resource launches an EC2 instance. Key attributes: ami, instance_type, subnet_id, vpc_security_group_ids, iam_instance_profile. Use ebs_block_device with encrypted=true for data at rest encryption. The iam_instance_profile grants the instance permissions to AWS services via STS AssumeRole.",
+    "source_uri": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance",
+    "resource_type": "aws_instance",
+    "provider": "aws"
+  },
+  {
+    "id": "tf-aws-iam-role-001",
+    "text": "The aws_iam_role resource creates an IAM role. Roles are assumed by trusted entities (EC2 instances, Lambda functions, other AWS accounts). The assume_role_policy defines who can assume the role. Attach permissions via aws_iam_role_policy_attachment. Follow least-privilege principle: grant only permissions required for the workload.",
+    "source_uri": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role",
+    "resource_type": "aws_iam_role",
+    "provider": "aws"
+  },
+  {
+    "id": "tf-aws-s3-001",
+    "text": "The aws_s3_bucket resource creates an S3 bucket. Critical security settings: use aws_s3_bucket_public_access_block to block public ACLs and policies, enable aws_s3_bucket_server_side_encryption_configuration for AES-256 or KMS encryption, enable versioning with aws_s3_bucket_versioning. Public buckets are a leading cause of data breaches.",
+    "source_uri": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket",
+    "resource_type": "aws_s3_bucket",
+    "provider": "aws"
+  },
+  {
+    "id": "tf-aws-lb-001",
+    "text": "The aws_lb resource (formerly aws_alb) creates an Application, Network, or Gateway Load Balancer. Application Load Balancers operate at Layer 7. Key attributes: load_balancer_type (application|network|gateway), subnets, security_groups (ALB only), internal. Use https_listener with ACM certificate for TLS termination.",
+    "source_uri": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb",
+    "resource_type": "aws_lb",
+    "provider": "aws"
+  },
+  {
+    "id": "vault-transit-001",
+    "text": "Vault's Transit secrets engine handles cryptographic functions on data in-transit. It can encrypt/decrypt data, generate data keys, generate random bytes, and sign/verify data. Transit keys never leave Vault. For signing, use type=ed25519 or rsa-4096. Use key_version to enforce rotation. The sign endpoint takes base64-encoded input and returns a vault:vX:... prefixed signature.",
+    "source_uri": "https://developer.hashicorp.com/vault/docs/secrets/transit",
+    "resource_type": null,
+    "provider": "vault"
+  },
+  {
+    "id": "vault-approle-001",
+    "text": "Vault AppRole authentication is designed for machine-to-machine authentication. An AppRole has a role_id (public, like a username) and a secret_id (private, like a password). Agents authenticate by posting both to /v1/auth/approle/login. Set token_ttl and token_max_ttl to limit exposure. Use response_wrapping for secure secret_id delivery.",
+    "source_uri": "https://developer.hashicorp.com/vault/docs/auth/approle",
+    "resource_type": null,
+    "provider": "vault"
+  },
+  {
+    "id": "consul-service-001",
+    "text": "Consul service discovery allows services to register themselves and discover other services. Services register via the agent API (/v1/agent/service/register) with a Name, Port, and health check. Health checks can be HTTP, TCP, TTL, or script-based. The catalog API provides service lookup. Use tags for environment and version metadata.",
+    "source_uri": "https://developer.hashicorp.com/consul/docs/services/usage/register-services",
+    "resource_type": null,
+    "provider": "consul"
+  },
+  {
+    "id": "nomad-job-001",
+    "text": "Nomad jobs are the unit of work in Nomad. A job contains task groups, which contain tasks. The job spec uses HCL2. For containerized workloads use driver=docker. For raw executables use driver=exec. Dispatch jobs are parameterized and run on-demand. Use constraint blocks to place jobs on specific nodes.",
+    "source_uri": "https://developer.hashicorp.com/nomad/docs/job-specification",
+    "resource_type": null,
+    "provider": "nomad"
+  },
+  {
+    "id": "tf-state-001",
+    "text": "Terraform state tracks the mapping between your configuration and real-world resources. Remote state should be stored in S3 (with DynamoDB locking), Terraform Cloud, or HCP Terraform. Never commit terraform.tfstate to git — it may contain secrets. Use terraform_remote_state data source to share outputs between workspaces.",
+    "source_uri": "https://developer.hashicorp.com/terraform/language/state",
+    "resource_type": null,
+    "provider": "terraform"
+  },
+  {
+    "id": "iam-security-001",
+    "text": "IAM least privilege means granting only the permissions required to perform a task. Avoid wildcard actions (*) in policies attached to EC2 roles. Use IAM Access Analyzer to identify overly-permissive policies. For S3, restrict GetObject and PutObject to specific bucket ARNs. Require MFA for console access to privileged roles. Rotate access keys every 90 days.",
+    "source_uri": "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html",
+    "resource_type": null,
+    "provider": "aws"
+  },
+  {
+    "id": "tf-aws-iam-profile-001",
+    "text": "The aws_iam_instance_profile resource wraps an IAM role so EC2 instances can assume it via the instance metadata service (IMDS). An instance profile can only contain one role. Reference the instance profile in aws_instance.iam_instance_profile. The role's permissions define what AWS APIs the instance can call without static credentials.",
+    "source_uri": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile",
+    "resource_type": "aws_iam_instance_profile",
+    "provider": "aws"
+  },
+  {
+    "id": "tf-destroy-risk-001",
+    "text": "Terraform destroy operations are irreversible for stateful resources. Destroying an aws_rds_instance, aws_s3_bucket (with force_destroy=true), aws_vpc, or aws_iam_role can cause cascading failures. Use prevent_destroy lifecycle rule for critical resources. A destroy plan affecting more than 3 resources should always require manual approval in CI.",
+    "source_uri": "https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle",
+    "resource_type": null,
+    "provider": "terraform"
+  }
+]

@@ -1,0 +1,83 @@
+name: consilium
+
+services:
+  vault:
+    image: hashicorp/vault:1.17
+    container_name: consilium-vault
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: consilium-dev-root
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+      VAULT_ADDR: http://0.0.0.0:8200
+    ports:
+      - "8200:8200"
+    volumes:
+      - vault_logs:/vault/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8200/v1/sys/health?standbyok=true || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 3s
+
+  consul:
+    image: hashicorp/consul:1.19
+    container_name: consilium-consul
+    command: >
+      agent -dev -client=0.0.0.0 -ui
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8500/v1/status/leader || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 3s
+
+  nomad:
+    image: hashicorp/nomad:1.8
+    container_name: consilium-nomad
+    privileged: true
+    command: >
+      agent -dev -bind=0.0.0.0 -consul-address=consul:8500 -network-interface=eth0
+    depends_on:
+      consul:
+        condition: service_healthy
+    ports:
+      - "4646:4646"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - nomad_data:/opt/nomad
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4646/v1/status/leader || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 18
+      start_period: 5s
+
+  neo4j:
+    image: neo4j:5
+    container_name: consilium-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/consilium-dev
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_server_memory_heap_initial__size: 512m
+      NEO4J_server_memory_heap_max__size: 1G
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+volumes:
+  vault_logs:
+  neo4j_data:
+  nomad_data:

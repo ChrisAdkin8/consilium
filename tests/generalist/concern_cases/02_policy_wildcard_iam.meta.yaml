@@ -1,0 +1,10 @@
+name: policy_wildcard_iam
+expected_verdict: concern
+expected_tools_triggered:
+  - policy_check
+expected_rule_ids:
+  - iam-no-wildcard
+expected_min_severity: HIGH
+resource_ids: []
+notes: >
+  Action="*" Resource="*" is unambiguous — policy_check must flag iam-no-wildcard.

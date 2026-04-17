@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 520" width="820" height="520"
+     font-family="ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,sans-serif">
+
+  <!-- ── Background ── -->
+  <rect width="820" height="520" fill="#000000" rx="10"/>
+
+  <!-- ── Arrowhead markers ── -->
+  <defs>
+    <marker id="ah" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#e2e8f0"/>
+    </marker>
+    <marker id="ahd" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <!-- ══════════════════════════════════════════════════
+       ROW 1 — CLI / entry point
+       ══════════════════════════════════════════════════ -->
+  <rect x="300" y="16" width="220" height="48" rx="8" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+  <text x="410" y="31" text-anchor="middle" font-size="9" fill="#94a3b8">operator</text>
+  <text x="410" y="51" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">consilium submit</text>
+
+  <!-- CLI → Speaker -->
+  <line x1="410" y1="64" x2="410" y2="92" stroke="#e2e8f0" stroke-width="1.5" marker-end="url(#ah)"/>
+  <text x="416" y="82" font-size="9" fill="#94a3b8">intent</text>
+
+  <!-- ══════════════════════════════════════════════════
+       ROW 2 — Speaker (orchestrator)
+       ══════════════════════════════════════════════════ -->
+  <rect x="288" y="92" width="244" height="48" rx="8" fill="#1d4ed8" stroke="#60a5fa" stroke-width="1"/>
+  <text x="410" y="108" text-anchor="middle" font-size="9" fill="#bfdbfe">LangGraph · tally votes · sign final record</text>
+  <text x="410" y="128" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Speaker</text>
+
+  <!-- Speaker → dispatch bus -->
+  <line x1="410" y1="140" x2="410" y2="174" stroke="#e2e8f0" stroke-width="1.5"/>
+  <line x1="145" y1="174" x2="675" y2="174" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="410" y="169" text-anchor="middle" font-size="9" fill="#6b7280">dispatch analysts (parallel)</text>
+  <!-- drops to each agent -->
+  <line x1="145" y1="174" x2="145" y2="205" stroke="#e2e8f0" stroke-width="1.5" marker-end="url(#ah)"/>
+  <line x1="410" y1="174" x2="410" y2="205" stroke="#e2e8f0" stroke-width="1.5" marker-end="url(#ah)"/>
+  <line x1="675" y1="174" x2="675" y2="205" stroke="#e2e8f0" stroke-width="1.5" marker-end="url(#ah)"/>
+
+  <!-- ══════════════════════════════════════════════════
+       ROW 3 — Analyst agents
+       ══════════════════════════════════════════════════ -->
+
+  <!-- Architect -->
+  <rect x="70" y="205" width="150" height="48" rx="8" fill="#0d9488" stroke="#2dd4bf" stroke-width="1"/>
+  <text x="145" y="221" text-anchor="middle" font-size="9" fill="#ccfbf1">claude-sonnet-4-6</text>
+  <text x="145" y="241" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Architect</text>
+
+  <!-- Blast Radius -->
+  <rect x="335" y="205" width="150" height="48" rx="8" fill="#d97706" stroke="#fcd34d" stroke-width="1"/>
+  <text x="410" y="221" text-anchor="middle" font-size="9" fill="#fef9c3">claude-sonnet-4-6</text>
+  <text x="410" y="241" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Blast Radius</text>
+
+  <!-- Red Team -->
+  <rect x="600" y="205" width="150" height="48" rx="8" fill="#dc2626" stroke="#f87171" stroke-width="1"/>
+  <text x="675" y="221" text-anchor="middle" font-size="9" fill="#fee2e2">claude-opus-4-6</text>
+  <text x="675" y="241" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Red Team</text>
+
+  <!-- ══════════════════════════════════════════════════
+       Agents → KB MCP merge bus
+       ══════════════════════════════════════════════════ -->
+  <line x1="145" y1="253" x2="145" y2="298" stroke="#e2e8f0" stroke-width="1.5"/>
+  <line x1="410" y1="253" x2="410" y2="298" stroke="#e2e8f0" stroke-width="1.5"/>
+  <line x1="675" y1="253" x2="675" y2="298" stroke="#e2e8f0" stroke-width="1.5"/>
+  <line x1="145" y1="298" x2="675" y2="298" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="410" y="293" text-anchor="middle" font-size="9" fill="#6b7280">MCP tool calls</text>
+  <!-- single arrow from merge point to KB MCP -->
+  <line x1="400" y1="298" x2="400" y2="314" stroke="#e2e8f0" stroke-width="1.5" marker-end="url(#ah)"/>
+
+  <!-- ══════════════════════════════════════════════════
+       ROW 4 — KB MCP Server + Neo4j
+       ══════════════════════════════════════════════════ -->
+
+  <!-- KB MCP Server -->
+  <rect x="305" y="314" width="190" height="48" rx="8" fill="#7c3aed" stroke="#a78bfa" stroke-width="1"/>
+  <text x="400" y="326" text-anchor="middle" font-size="8" fill="#ede9fe">semantic_search · blast_radius</text>
+  <text x="400" y="336" text-anchor="middle" font-size="8" fill="#ede9fe">security_posture</text>
+  <text x="400" y="352" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">KB MCP Server</text>
+
+  <!-- KB MCP → Neo4j -->
+  <line x1="495" y1="338" x2="548" y2="338" stroke="#e2e8f0" stroke-width="1.5" marker-end="url(#ah)"/>
+  <text x="521" y="332" text-anchor="middle" font-size="9" fill="#6b7280">Cypher</text>
+
+  <!-- Neo4j -->
+  <rect x="548" y="314" width="140" height="48" rx="8" fill="#15803d" stroke="#4ade80" stroke-width="1"/>
+  <text x="618" y="330" text-anchor="middle" font-size="9" fill="#bbf7d0">resource + IAM graph</text>
+  <text x="618" y="350" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Neo4j</text>
+
+  <!-- ══════════════════════════════════════════════════
+       Infrastructure divider
+       ══════════════════════════════════════════════════ -->
+  <line x1="28" y1="408" x2="792" y2="408" stroke="#374151" stroke-width="1" stroke-dasharray="5,4"/>
+  <text x="30" y="404" font-size="9" fill="#6b7280">infrastructure layer</text>
+
+  <!-- ══════════════════════════════════════════════════
+       ROW 5 — Infrastructure
+       ══════════════════════════════════════════════════ -->
+
+  <!-- Vault -->
+  <rect x="60" y="418" width="160" height="48" rx="8" fill="#c2410c" stroke="#fb923c" stroke-width="1"/>
+  <text x="140" y="434" text-anchor="middle" font-size="9" fill="#ffedd5">transit keys · AppRole · audit log</text>
+  <text x="140" y="454" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Vault</text>
+
+  <!-- Consul -->
+  <rect x="330" y="418" width="160" height="48" rx="8" fill="#0284c7" stroke="#38bdf8" stroke-width="1"/>
+  <text x="410" y="434" text-anchor="middle" font-size="9" fill="#e0f2fe">all services register here</text>
+  <text x="410" y="454" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Consul</text>
+
+  <!-- Nomad -->
+  <rect x="600" y="418" width="160" height="48" rx="8" fill="#059669" stroke="#34d399" stroke-width="1"/>
+  <text x="680" y="434" text-anchor="middle" font-size="9" fill="#d1fae5">job dispatch · Digital Twin</text>
+  <text x="680" y="454" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Nomad</text>
+
+  <!-- ══════════════════════════════════════════════════
+       Side channels (dashed L-paths)
+       ══════════════════════════════════════════════════ -->
+
+  <!-- Speaker/agents → Vault  (left side, dashed) -->
+  <path d="M 288,116 L 32,116 L 32,442 L 60,442"
+        stroke="#6b7280" stroke-width="1.2" stroke-dasharray="5,3" fill="none"
+        marker-end="url(#ahd)"/>
+  <!-- label on the vertical segment, rotated -->
+  <text transform="translate(8,278) rotate(-90)"
+        text-anchor="middle" font-size="9" fill="#6b7280">sign &amp; verify (Ed25519)</text>
+
+  <!-- Speaker → Nomad  (right side, dashed) -->
+  <path d="M 532,116 L 788,116 L 788,442 L 760,442"
+        stroke="#6b7280" stroke-width="1.2" stroke-dasharray="5,3" fill="none"
+        marker-end="url(#ahd)"/>
+  <!-- label on the vertical segment, rotated -->
+  <text transform="translate(812,278) rotate(90)"
+        text-anchor="middle" font-size="9" fill="#6b7280">dispatch apply</text>
+
+  <!-- ══════════════════════════════════════════════════
+       Footer caption
+       ══════════════════════════════════════════════════ -->
+  <text x="410" y="504" text-anchor="middle" font-size="9" fill="#6b7280">
+    Each analyst returns a Vault-signed opinion · Speaker tallies, signs the final record, and dispatches terraform apply
+  </text>
+
+</svg>

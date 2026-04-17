@@ -1,0 +1,11 @@
+name: historical_precedent_wildcard_trust
+expected_verdict: concern
+expected_tools_triggered:
+  - historian_lookup
+expected_similar_incidents:
+  - INC-482
+expected_min_severity: HIGH
+resource_ids: []
+notes: >
+  Wildcard Principal on AssumeRole matches the seeded INC-482 cross-account
+  takeover. historian_lookup must return structural_similarity ≥ 0.75.

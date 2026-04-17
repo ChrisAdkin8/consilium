@@ -1,0 +1,10 @@
+name: slo_change_freeze
+expected_verdict: concern
+expected_tools_triggered:
+  - slo_impact
+expected_min_severity: HIGH
+resource_ids:
+  - aws_db_instance.payments
+notes: >
+  aws_db_instance.payments is inside a seeded change-freeze. slo_impact must
+  return inside_change_freeze=true and name payments-api as at-risk.
