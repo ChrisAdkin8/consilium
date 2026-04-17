@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/consilium_emblem.svg" alt="Consilium emblem" width="240">
+  <img src="docs/consilium_emblem.svg" alt="Consilium emblem" width="720">
 </p>
 
 # Consilium
